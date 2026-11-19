@@ -1,10 +1,10 @@
-# Telegram Ukrainian Translator · Python
+# Ukrainizator Bot 🇺🇦
 
-Telegram-бот, який відповідає українським перекладом на іншомовне повідомлення.
+**Автоматичний переклад Telegram-повідомлень українською з локальним LibreTranslate та визначенням мови.**
 Python 3.11+, FastAPI, HTTPX, SQLite, Telegram Bot API та ngrok.
 
 Python-переробка [оригінального проєкту Roman Halaiko](https://github.com/Roman-Gal/telegram-ukrainian-translator),
-початкова ревізія `b4cdb0e`. Попередня реалізація Node.js + DeepL залишається в Git-історії.
+початкова ревізія `b4cdb0e`. Оригінальна реалізація Node.js + DeepL доступна у вихідному репозиторії.
 Переклад виконує локальний [LibreTranslate](https://github.com/LibreTranslate/LibreTranslate) з моделями Argos Translate.
 API-ключ для локального сервісу не потрібен. Бот і сервіс працюють як два Python-процеси:
 Telegram → ngrok → бот `8081` → LibreTranslate `5000` → відповідь українською.
