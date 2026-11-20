@@ -9,6 +9,42 @@ Python-переробка [оригінального проєкту Roman Halai
 API-ключ для локального сервісу не потрібен. Бот і сервіс працюють як два Python-процеси:
 Telegram → ngrok → бот `8081` → LibreTranslate `5000` → відповідь українською.
 
+## Запуск однією кнопкою у Windows
+
+Після первинного встановлення двічі клацніть **`Запустити ботів.vbs`** у папці проєкту.
+Відкриється панель і сама виконає запуск. Або відкрийте панель командою
+`.\.venv\Scripts\pythonw.exe -m bot_control` і натисніть **«Запустити все»**.
+
+Панель запускає локальний перекладач, спільний шлюз, ngrok і двох ботів; отримує актуальну HTTPS-адресу,
+зберігає її у двох `.env`, перевіряє webhook і доступність обох ботів з інтернету.
+Консолі служб приховані. Повторний запуск використовує чинні служби та не створює дублікати.
+Після перезавантаження комп’ютера достатньо знову відкрити цей файл.
+
+Ярлик **Telegram Bots** на робочому столі:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\create-desktop-shortcut.ps1
+```
+
+У вікні є стани п’яти служб, поточна адреса, кнопки **«Запустити все»**, **«Зупинити»** та відкриття журналів.
+Закриття вікна залишає служби у фоні. Перед зупинкою панель створює SQLite-backup обох баз.
+PID, час створення та команда процесу перевіряються, щоб після перезавантаження не зупинити іншу програму з повторно використаним PID.
+Служби, які вже працювали з цього проєкту, підхоплюються; сторонні програми на потрібних портах не зупиняються.
+Якщо ngrok вже використовується іншим ручним тунелем, панель пробує створити окремий маршрут, не замінюючи існуючий;
+за обмеження тарифу показує помилку й просить закрити попередній ручний ngrok.
+
+Для панелі потрібні налаштований сусідній `telegram-task-planner`, Node.js, ngrok з авторизацією,
+середовище бота `.venv` та встановлений LibreTranslate у `.tools/libretranslate/.venv`.
+Токени вводяться один раз у `.env` кожного бота. Після оновлення коду встановіть `pip install -r requirements.txt` у `.venv`.
+Службові файли та журнали панелі — у `data/control-panel/`; вони не публікуються в Git.
+
+Без вікна, для діагностики:
+
+```powershell
+.\.venv\Scripts\python.exe -X utf8 -m bot_control --headless --start
+.\.venv\Scripts\python.exe -X utf8 -m bot_control --headless --stop
+```
+
 ## Поведінка
 
 - Локально визначає мову (Lingua для кирилиці, `langdetect` для інших алфавітів); впевнено визначену українську пропускає без запиту до API.
@@ -243,11 +279,11 @@ JOKE_COOLDOWN_SECONDS=0
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
-.\.venv\Scripts\python.exe -m ruff check translator tests scripts/run_libretranslate.py
-.\.venv\Scripts\python.exe -m ruff format --check translator tests scripts/run_libretranslate.py
+.\.venv\Scripts\python.exe -m ruff check translator bot_control tests scripts/run_libretranslate.py
+.\.venv\Scripts\python.exe -m ruff format --check translator bot_control tests scripts/run_libretranslate.py
 ```
 
-55 автоматичних тестів використовують справжній локальний детектор, SQLite і mock HTTP; Telegram, ngrok та платні API не викликаються.
+71 автоматичний тест використовує справжній локальний детектор, SQLite і mock HTTP; Telegram, ngrok та платні API не викликаються.
 Окремо `translator.check_translation` перевіряє справжній локальний переклад без Telegram.
 Бот перевірений на Python 3.14.6 / Windows, LibreTranslate — на Python 3.12.0.
 Після зміни коду запущеного бота: `powershell -ExecutionPolicy Bypass -File .\scripts\restart-translator.ps1`.
