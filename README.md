@@ -261,8 +261,6 @@ TRANSLATION_API_KEY=
 Також можна вказати URL власного віддаленого LibreTranslate-інстансу та його ключ, якщо він потрібен.
 HTTP дозволений лише для localhost, зовнішні API потребують HTTPS. Таймаут — `API_TIMEOUT_SECONDS=60`.
 
-## Жарти
-
 ## DeepL API та MyDevil / FreeBSD
 
 Для сервера без локальних ML-моделей доступний офіційний DeepL API:
