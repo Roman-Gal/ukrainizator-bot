@@ -263,6 +263,37 @@ HTTP дозволений лише для localhost, зовнішні API пот
 
 ## Жарти
 
+## DeepL API та MyDevil / FreeBSD
+
+Для сервера без локальних ML-моделей доступний офіційний DeepL API:
+
+```dotenv
+TRANSLATION_PROVIDER=deepl
+TRANSLATION_API_URL=https://api-free.deepl.com/v2/translate
+TRANSLATION_API_KEY=YOUR_DEEPL_API_KEY
+```
+
+Для відповідного платного API-акаунта використовуйте `https://api.deepl.com/v2/translate`.
+Текст повідомлення передається DeepL, якщо обрано цей провайдер. Ключ зберігайте тільки
+у приватному `.env`; він не потрапляє в Git або логи. Перед реєстрацією Telegram webhook
+бот перевіряє ключ через `/v2/usage`, без надсилання тексту на переклад. Помилка квоти
+456 не повторюється автоматично. Реальний ключ і активацію webhook додаємо окремо.
+
+На FreeBSD `requirements.txt` обирає чисту Python-версію Lingua 1.4.2, оскільки для
+Lingua 2.2.0 немає готового пакета цієї платформи. На Windows/Linux лишається 2.2.0.
+Використовуються ті самі API детектора й перевірки поведінки; точні scores між версіями
+можуть різнитися. `requirements.lock.txt` описує початкове Windows-середовище, а не
+FreeBSD. Нативні залежності FastAPI можуть потребувати Rust/C-компіляції; на MyDevil
+виконуйте встановлення з `CARGO_BUILD_JOBS=1`, щоб обмежити паралельність збірки.
+
+Без справжніх ключів код можна розгорнути для перевірки, але не слід запускати робочий
+процес бота або змінювати чинний Telegram webhook. Встановлені placeholders не означають
+готове підключення Telegram/DeepL. Локальний LibreTranslate для режиму DeepL не потрібний.
+
+Офіційний контракт: https://developers.deepl.com/api-reference/translate/request-translation
+
+## Жарти
+
 Усі 20 текстів — у `translator/jokes.py`. Можна редагувати їх без зміни коду бота.
 Константа набору — `ANTIRUSSIAN_JOKES`.
 Набір містить надані користувачем авторські формулювання, збережені дослівно, з ненормативною лексикою.

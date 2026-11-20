@@ -69,8 +69,8 @@ class Settings:
             raise ValueError("Неправильний PORT або API_TIMEOUT_SECONDS (1–120).")
         if not re.fullmatch(r"/(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_-]+", self.webhook_path):
             raise ValueError("PUBLIC_WEBHOOK_PATH має бути абсолютним URL-шляхом без query.")
-        if self.provider not in {"disabled", "http", "libretranslate"}:
-            raise ValueError("TRANSLATION_PROVIDER: disabled, http або libretranslate.")
+        if self.provider not in {"disabled", "http", "libretranslate", "deepl"}:
+            raise ValueError("TRANSLATION_PROVIDER: disabled, http, libretranslate або deepl.")
         if self.provider != "disabled":
             api = urlsplit(self.api_url)
             if (
@@ -82,6 +82,17 @@ class Settings:
                 raise ValueError("Задайте TRANSLATION_API_URL — повний URL endpoint перекладу.")
             if api.scheme == "http" and api.hostname not in {"localhost", "127.0.0.1", "::1"}:
                 raise ValueError("API потребує HTTPS (HTTP дозволений тільки для localhost).")
+            if self.provider == "deepl" and (
+                not self.api_key
+                or api.scheme != "https"
+                or api.hostname not in {"api-free.deepl.com", "api.deepl.com"}
+                or api.path != "/v2/translate"
+                or api.query
+                or api.port not in {None, 443}
+            ):
+                raise ValueError(
+                    "DeepL потребує API-ключа й офіційного HTTPS endpoint /v2/translate."
+                )
         if (
             not 0.5 <= self.russian_confidence <= 1
             or self.russian_min_letters < 3

@@ -55,6 +55,22 @@ class HttpTranslator:
 
     async def check_ready(self):
         """Check Ukrainian support before installing the Telegram webhook."""
+        if self.settings.provider == "deepl":
+            url = urlsplit(self.settings.api_url)
+            try:
+                response = await self.client.get(
+                    urlunsplit((url.scheme, url.netloc, "/v2/usage", "", "")),
+                    headers={"Authorization": f"DeepL-Auth-Key {self.settings.api_key}"},
+                )
+                response.raise_for_status()
+                usage = response.json()
+            except httpx.HTTPStatusError as error:
+                raise ApiError("DeepL readiness", error.response.status_code) from None
+            except (httpx.RequestError, ValueError):
+                raise ApiError("DeepL readiness") from None
+            if not isinstance(usage, dict):
+                raise ApiError("DeepL usage response", retryable=False)
+            return
         if self.settings.provider != "libretranslate":
             return
         url = urlsplit(self.settings.api_url)
@@ -91,7 +107,10 @@ class HttpTranslator:
         s = self.settings
         if s.provider == "disabled":
             raise ApiError("translation not configured", retryable=False)
-        if s.provider == "libretranslate":
+        if s.provider == "deepl":
+            payload = {"text": [text], "target_lang": "UK"}
+            headers = {"Authorization": f"DeepL-Auth-Key {s.api_key}"}
+        elif s.provider == "libretranslate":
             payload = {"q": text, "source": "auto", "target": "uk", "format": "text"}
             if s.api_key:
                 payload["api_key"] = s.api_key
@@ -102,7 +121,17 @@ class HttpTranslator:
         data = await post_json(
             self.client, s.api_url, payload, service="translation", headers=headers
         )
-        if s.provider == "libretranslate":
+        if s.provider == "deepl":
+            translations = data.get("translations")
+            if (
+                not isinstance(translations, list)
+                or len(translations) != 1
+                or not isinstance(translations[0], dict)
+            ):
+                raise ApiError("DeepL response", retryable=False)
+            translated = translations[0].get("text")
+            source = translations[0].get("detected_source_language", "unknown")
+        elif s.provider == "libretranslate":
             translated = data.get("translatedText")
             detected = data.get("detectedLanguage", {})
             source = (
